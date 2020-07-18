@@ -9,6 +9,9 @@ import java.util.Optional;
 
 public abstract class Context {
   private final Map<Class<?>, Class<?>> classMap = new HashMap<>();
+  private final Map<Class<?>, Object> instanceMap = new HashMap<>();
+
+  public static enum Scope { Prototype, Singleton }
 
   public Context() {
     this.configure();
@@ -16,11 +19,28 @@ public abstract class Context {
 
   protected abstract void configure();
 
-  protected <T> void register(final Class<T> baseClass, final Class<? extends T> subClass) {
+  protected <T> void register(final Class<T> baseClass, final Class<? extends T> subClass, final Scope scope) {
     classMap.put(baseClass, subClass.asSubclass(baseClass));
+    if (scope.equals(Scope.Singleton)) {
+      instanceMap.put(baseClass, null);
+    }
   }
 
   public <T> T getInstance(final Class<T> base) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    if (isSingletonScope(base)) {
+      if (instanceMap.get(base) == null) {
+        instanceMap.put(base, instantiate(base));
+      }
+      return (T) instanceMap.get(base);
+    }
+    return instantiate(base);
+  }
+
+  private <T> boolean isSingletonScope(final Class<T> base) {
+    return instanceMap.containsKey(base);
+  }
+
+  private <T> T instantiate(final Class<T> base) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
     final Class<?> impl = classMap.get(base);
     // look for Inject annotations
     final Optional<Constructor<?>> annotated = Arrays.stream(impl.getConstructors())

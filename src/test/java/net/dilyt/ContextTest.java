@@ -15,18 +15,18 @@ public class ContextTest {
   private class AddingContext extends Context {
     @Override
     protected void configure() {
-      register(Example.class, ExampleImpl.class);
-      register(Operation.class, AdditionOperation.class);
-      register(Format.class, SymbolFormat.class);
+      register(Example.class, ExampleImpl.class, Scope.Prototype);
+      register(Operation.class, AdditionOperation.class, Scope.Prototype);
+      register(Format.class, SymbolFormat.class, Scope.Prototype);
     }
   }
 
   private class SubtractionContext extends Context {
     @Override
     protected void configure() {
-      register(Example.class, ExampleImpl.class);
-      register(Operation.class, SubtractionOperation.class);
-      register(Format.class, CurrencyFormat.class);
+      register(Example.class, ExampleImpl.class, Scope.Prototype);
+      register(Operation.class, SubtractionOperation.class, Scope.Prototype);
+      register(Format.class, CurrencyFormat.class, Scope.Singleton);
     }
   }
 
@@ -57,5 +57,13 @@ public class ContextTest {
     final Format instance1 = context.getInstance(Format.class);
     final Format instance2 = context.getInstance(Format.class);
     Assert.assertNotSame(instance1, instance2);
+  }
+
+  @Test
+  public void testSingletonReturnsSameInstance() throws Exception {
+    Context context = new SubtractionContext();
+    final Format instance1 = context.getInstance(Format.class);
+    final Format instance2 = context.getInstance(Format.class);
+    Assert.assertSame(instance1, instance2);
   }
 }
