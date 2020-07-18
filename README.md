@@ -20,12 +20,13 @@ Create a new configuration by extending the Context class, calling the register 
 public class AddingContext extends Context {
    @Override
    protected void configure() {
-     register(Example.class, ExampleImpl.class);
-     register(Operation.class, AdditionOperation.class);
-     register(Format.class, SymbolFormat.class);
+      register(Example.class, ExampleImpl.class, Scope.Prototype);
+      register(Operation.class, AdditionOperation.class, Scope.Prototype);
+      register(Format.class, SymbolFormat.class, Scope.Singleton);
    }
  }
 ```
+Available scopes are `Prototype` and `Singleton` for now.
 
 Use the included `Inject` annotation to mark constructor to be used for dependencies:
 ```
